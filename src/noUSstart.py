@@ -117,10 +117,7 @@ if __name__ == "__main__":
         sys.exit(10)
 
     # add Canada Red and White
-    if fd.data[fd.name]['SslValue']['persistentProfileData']['customColors']:
-        fd.data[fd.name]['SslValue']['persistentProfileData']['customColors'].append(customColors['color900'])
-    else:
-        fd.data[fd.name]['SslValue']['persistentProfileData']['customColors'] = customColors
+    fd.data[fd.name]['SslValue']['persistentProfileData']['customColors'] = customColors
 
     # adding US_01 and US_02 trucks
     print("\nAdding trucks from Michigan and Alaska")
@@ -141,14 +138,13 @@ if __name__ == "__main__":
     print("\nAdding a reasonable amount of money $300,000 if played Michigan and Alaska")
     fd.data[fd.name]['SslValue']['persistentProfileData']['money'] = 300000
 
-
     print("\nLet's start in Taymyr")
     if "ru_02" not in fd.data[fd.name]['SslValue']['persistentProfileData']['knownRegions']:
         fd.data[fd.name]['SslValue']['persistentProfileData']['knownRegions'].append("ru_02")
     fd.data[fd.name]['SslValue']['lastLoadedLevel'] = "level_ru_02_02"
 
     fd.writeSaveFile()
-    sys.exit(10)
+    sys.exit(0)
 
     
  
