@@ -6,11 +6,11 @@ Snowrunner edit save file to skip starting in the US maps of Michigan and Alaska
 ### Instructions
 1. Create a new save in Snowrunner
 2. Open a Command Prompt
-3. Run <path to exe>\noUSstart <path to save files>\CompleteSave.dat
+3. Run "path to exe"\noUSstart "path to save files"\CompleteSave.dat
 4. Play Snowrunner and have fun
 
 ### Example
-
+```
 C:\Users\myhome>D:\projects\noUSstart\dist\noUSstart \
 "C:\Users\myhome\Documents\My Games\SnowRunner\base\storage\deadbeefdeadbeefdeadbeefdeadbeef\CompleteSave.dat"
 
@@ -39,5 +39,6 @@ Adding a reasonable rank of 21 if played Michigan and Alaska
 Adding a reasonable amount of money $300,000 if played Michigan and Alaska
 
 Let's start in Taymyr
+```
 
 
