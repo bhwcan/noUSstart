@@ -2,86 +2,27 @@
 
 import sys
 from snsave import SNSave
-from noUStrucks import trucksInWarehouse, customColors
-
-upgradesGiverData = {
-  "level_us_01_01": {
-      "US_01_01_UPGRADE_FLEESTAR_ALLWHEELS": 2,
-      "US_01_01_UPGRADE_G_SCOUT_OFFROAD": 2,
-      "US_01_01_UPGRADE_CK_SUSPENSION": 2,
-      "US_01_01_UPGRADE_SCOUT_OLD_ENGINE": 2,
-      "US_01_01_UPGRADE_FLEESTAR_SUSP_HIGHT": 2,
-      "US_01_01_UPGRADE_TRUCK_OLD_ENGINE": 2,
-      "US_01_01_UPGRADE_GMC_SUSP_HIGHT": 2
-  },
-  "level_us_01_02": {
-      "US_01_02_UPGRADE_TRUCK_ENG_4070": 2,
-      "US_01_02_UPGRADE_CHEVY_DIFF_LOCK": 2,
-      "US_01_02_UPGRADE_TRUCK_ENG": 2,
-      "US_01_02_UPGRADE_WHITE_ALLWHEELS": 2,
-      "US_01_02_UPGRADE_GMC_DIFF_LOCK": 2,
-      "US_01_02_UPGRADE_INTERN_SCOUT_SUSP_HIGH": 2,
-      "US_01_02_UPGRADE_WHITE_SUSP_HIGH": 2,
-      "US_01_02_UPGRADE_G_SCOUT_HIGHWAY": 2
-  },
-  "level_us_01_03": {
-      "US_01_03_UPG_3": 2,
-      "US_01_03_UPG_6": 2,
-      "US_01_03_UPG_2": 2,
-      "US_01_03_UPG_4": 2
-  },
-  "level_us_01_04_new": {
-      "US_01_04_UPG_1": 2,
-      "US_01_04_UPG_3": 2
-  },
-  "level_us_02_01": {
-      "US_02_01_UPG_02": 2,
-      "US_02_01_UPG_09": 2,
-      "US_02_01_UPG_05": 2,
-      "US_02_01_UPG_06": 2,
-      "US_02_01_UPG_04": 2,
-      "US_02_01_UPG_07": 2,
-      "US_02_01_UPG_08": 2,
-      "US_02_01_UPG_01": 2
-  },
-  "level_us_02_02_new": {
-      "US_02_02_UPG_05": 2,
-      "US_02_02_UPG_01": 2,
-      "US_02_02_UPG_02": 2,
-      "US_02_02_UPG_04": 2,
-      "US_02_02_UPG_06": 2
-  },
-  "level_us_02_03_new": {
-      "US_02_03_UPG_01": 2,
-      "US_02_03_UPG_02": 2,
-      "US_02_03_UPG_04": 2,
-      "US_02_03_UPG_06": 2,
-      "US_02_03_UPG_05": 2,
-      "US_02_03_UPG_07": 2
-  },
-  "level_us_02_04_new": {
-      "US_02_04_UPG_3": 2,
-      "US_02_04_UPG_2": 2,
-      "US_02_04_UPG_1": 2,
-      "US_02_04_UPG_5": 2
-  }
-}
+from UStrucks import USupgradesGiverData, UStrucksInWarehouse, CAcustomColors
+from RUtrucks import RUupgradesGiverData, RUtrucksInWarehouse
 
 def setRank(save, srank):
 
-    rank = int(srank)
-    if rank < 1 or rank > 30:
-        sys.exit("Invalid rank " + srank + " must be between 1 and 30")
+    try:
+        rank = int(srank)
+    except ValueError:
+        rank = 0
+    pd = save.data[save.name]['SslValue']['persistentProfileData']
+
+    if (rank < 1 or rank > 30) or (pd['rank'] == 30 and rank == 30):
+        print("current       rank: ", pd['rank'])
+        print("current experience: ", pd['experience'], "\n")
+        return
 
     ranks = [ 0, 0, 700, 1700, 2900, 4100, 5400, 6900, 8500, 10100, 11800,
               12700, 15700, 17800, 20100, 22500, 25000, 27500, 30100, 32700,
               35500, 38300, 41300, 44300, 47500, 50700, 54100, 57500, 61100,
               64900, 69000 ]
-    pd = save.data[save.name]['SslValue']['persistentProfileData']
 
-    #print("current       rank: ", pd['rank'])
-    #print("current experience: ", pd['experience'], "\n")
-        
     rp = pd['experience'] - ranks[pd['rank']]
     np = ranks[rank] + rp
     if rank < 30 and np >= ranks[rank+1]:
@@ -97,8 +38,34 @@ def setRank(save, srank):
 
 def usage():
     print("Usage:")
-    print("    noUSstart CompleteSave.dat")
-     
+    print("    noUSstart CompleteSave.dat <args>\n")
+    print("  /base        - add Taymyr trucks and upgrades, to start on DLC map")
+    print("  /DLC         - do not remove trucks from storage, keep DLC trucks")
+    print("  /money:value - value of money to add, default is 300000")
+    print("  /rank:value  - value for rank, 0 does not change your rank, default is 21")
+    print("\n")
+
+def getarguments():
+    # use windows style arguments
+    switches = ['DLC', "base", "rank", "money"]
+    arguments = {}
+    for arg in sys.argv[2:]: # Skip script name and file name
+        if arg.startswith('/'):
+            arg = arg[1:]
+            if ':' in arg:
+                key, value = arg.split(':', 1)
+            else:
+                key, value = arg, "0"
+            
+            if key in switches:
+                arguments[key] = value
+
+    return arguments
+
+# defaults
+money = 300000
+rank = 21
+
 # MAIN
 if __name__ == "__main__":
 
@@ -107,7 +74,10 @@ if __name__ == "__main__":
     #print(f"Arguments count: {argc}")
     if argc <= 1:
         usage()
-        sys.exit(0)
+        sys.exit(1)
+    arguments = getarguments()
+    for a in arguments:
+        print(a, arguments[a])
 
     # open Save file
     fd = SNSave()
@@ -117,26 +87,54 @@ if __name__ == "__main__":
         sys.exit(10)
 
     # add Canada Red and White
-    fd.data[fd.name]['SslValue']['persistentProfileData']['customColors'] = customColors
+    if "customColors" not in fd.data[fd.name]['SslValue']['persistentProfileData']:
+        fd.data[fd.name]['SslValue']['persistentProfileData']['customColors'] = {}
+    fd.data[fd.name]['SslValue']['persistentProfileData']['customColors']['color900'] = CAcustomColors['color900']
+
+    if "DLC" not in arguments:
+        print("\nDeleting all trucks currently in storage")
+        # deleting trucks in warehouse
+        fd.data[fd.name]['SslValue']['persistentProfileData']['trucksInWarehouse'] = []
 
     # adding US_01 and US_02 trucks
     print("\nAdding trucks from Michigan and Alaska")
-    for t in trucksInWarehouse:
+    for t in UStrucksInWarehouse:
+        fd.data[fd.name]['SslValue']['persistentProfileData']['trucksInWarehouse'].append(t)
         print ("\t", t['type'])
-
-    fd.data[fd.name]['SslValue']['persistentProfileData']['trucksInWarehouse'] = trucksInWarehouse
     
     # Adding US_01 and US_02 upgrades
     print("\nAdding upgrades from Michigan and Alaska")
-    fd.data[fd.name]['SslValue']['upgradesGiverData'] = upgradesGiverData
+    for u in USupgradesGiverData:
+        print(u)
+        fd.data[fd.name]['SslValue']['upgradesGiverData'][u] = USupgradesGiverData[u]
 
-    # set rank to 21
-    print("\nAdding a reasonable rank of 21 if played Michigan and Alaska")
-    setRank(fd, 21)
+    # if requested adding RU_02 trucks
+    if "base" in arguments:
+        print("\nAdding trucks from Taymyr plus the \"Azov 73210\" which you would have needed")
+        for t in RUtrucksInWarehouse:
+            fd.data[fd.name]['SslValue']['persistentProfileData']['trucksInWarehouse'].append(t)
+            print ("\t", t['type'])
+        
+        # Adding US_01 and US_02 upgrades
+        print("\nAdding upgrades from Taymyr")
+        for u in RUupgradesGiverData:
+            print(u)
+            fd.data[fd.name]['SslValue']['upgradesGiverData'][u] = RUupgradesGiverData[u]
 
+    # set rank
+    if "rank" in arguments:
+        rank = arguments["rank"]
+    print("\nSetting a rank of", rank)
+    setRank(fd, rank)
 
-    print("\nAdding a reasonable amount of money $300,000 if played Michigan and Alaska")
-    fd.data[fd.name]['SslValue']['persistentProfileData']['money'] = 300000
+    if "money" in arguments:
+        try:
+            money = int(arguments["money"])
+        except ValueError:
+            money = 0
+    print("\nAdding a reasonable amount of money", money, "if played Michigan and Alaska")
+    fd.data[fd.name]['SslValue']['persistentProfileData']['money'] += money
+    print("money:", fd.data[fd.name]['SslValue']['persistentProfileData']['money'])
 
     print("\nLet's start in Taymyr")
     if "ru_02" not in fd.data[fd.name]['SslValue']['persistentProfileData']['knownRegions']:
